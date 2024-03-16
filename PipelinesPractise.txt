@@ -1,0 +1,106 @@
+[
+  {
+	$group: {
+	  "_id" : "$gender",
+		"total_users" : {
+      $sum : 1
+    }
+	}
+},
+  {
+    $sort: {
+      "_id": 1
+    }
+  }
+
+]
+[
+  {
+    $group: {
+      _id: "$company.country.city",
+      total_users : {
+				$sum : 1
+	}
+    }
+  },
+  {
+    $sort : {
+      total_users : -1
+    }
+  }
+]
+[
+  {
+    $match: {
+      "gender" : "male"
+    }
+  }
+  ,{
+    $project: {
+      "name" : 1,
+      "email" : 1,
+      "gender" : 1
+    }
+  }
+]
+
+[{
+  $match: {
+  	"company.country.country" : "China"
+  }
+},
+ {
+   $group: {
+     _id: "$company.country.city",
+     total_companies_registered : {
+       $sum : 1
+     },
+     company_names : {
+       $push : "$company.name"
+     }
+   }
+ },
+ {
+   $project: {
+     company_names : 1
+   }
+ }
+]
+[
+  {
+	$addFields: {
+    "total_tags" : {
+       $size : { $ifNull: ["$tags" , []]}
+    }
+	}
+}
+]
+[
+  {
+    $lookup: {
+      from: "tbl_authors",
+      localField: "author_id",
+      foreignField: "_id",
+      as: "authors"
+    }
+	},
+  {
+    $addFields: {
+      author_details: {
+        $first : "$authors"
+      }
+    }
+  },
+  {
+    $addFields: {
+      "author_name": "$author_details.name"
+    }
+  },
+    {
+    $project: {
+      title : 1,
+      publication_year : 1,
+      author_name : 1
+    }
+  },  
+]
