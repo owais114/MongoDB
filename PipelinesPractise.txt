@@ -104,3 +104,56 @@
     }
   },  
 ]
+
+[
+  {
+  $lookup: {
+    from: "tbl_books",
+    localField: "books",
+    foreignField: "_id",
+    as: "book_details"
+  }
+},
+  {
+    $project: {
+      "name" : 1,
+      "nationality" : 1,
+      "birthdate" : 1,
+      "book_details.title" : 1,
+      "book_details.publication_year" : 1
+    }
+  }
+]
+[
+  {
+    $unwind: "$books",
+  },
+  {
+  $lookup: {
+    from: "tbl_books",
+    localField: "books",
+    foreignField: "_id",
+    as: "book_details"
+  }
+},
+  {
+    $addFields: {
+      title: {
+        $first : "$book_details.title"
+      },
+      publication_year : 
+        {
+          $first : "$book_details.publication_year"
+        }
+    }
+  },
+  {
+    $project: {
+      title : 1,
+      publication_year : 1,
+      name : 1,
+      nationality : 1,
+      birthDate : 1
+    }
+  }
+]
